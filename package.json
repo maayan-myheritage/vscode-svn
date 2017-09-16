@@ -1,0 +1,60 @@
+{
+  "name": "svn",
+  "displayName": "SVN for Visual Studio Code",
+  "description": "SVN source control provider for Visual Studio Code",
+  "version": "0.0.1",
+  "publisher": "maayancohen",
+  "engines": {
+    "vscode": "^1.16.0"
+  },
+  "categories": [
+    "SCM Providers"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "svn.add",
+        "title": "add - Open a new file to add it to the depot",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.revert",
+        "title": "revert - Discard changes from an opened file",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.diff",
+        "title": "diff - Display diff of client file with depot file",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.diffRevision",
+        "title": "diff revision - Display diff of client file with depot file at a specific revision",
+        "category": "SVN"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "babel-node ./",
+    "compile": "babel ./src --watch --out-dir ./out --source-maps --require babel-polyfill",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^7.0.0",
+    "babel-cli": "^6.26.0",
+    "babel-plugin-transform-async-to-generator": "^6.24.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-es2017": "^6.24.1",
+    "eslint": "^4.6.1",
+    "mocha": "^3.5.0",
+    "vscode": "^1.1.5"
+  }
+}
