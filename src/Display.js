@@ -29,7 +29,6 @@ export function updateEditor() {
 
     var doc = editor.document;
 
-    //If no folder is open, override the perforce directory to the files
     var directoryOverride = null;
     if (workspace.rootPath === undefined) {
         directoryOverride = Path.dirname(doc.uri.fsPath);
