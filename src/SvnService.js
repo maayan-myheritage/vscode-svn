@@ -1,20 +1,19 @@
 import {
-    workspace,
-    window,
-    TextDocument
+    workspace
 } from 'vscode';
 
 import * as Display from './Display';
+import * as Utils from './Utils';
 import * as CP from 'child_process';
 
-let _config = null;
+let config = null;
 
-export function setConfig(config) {
-    _config = config;
+export function setConfig(_config) {
+    config = _config;
 }
 
 export function getConfig() {
-    return _config;
+    return config;
 }
 
 export function handleInfoServiceResponse(err, stdout, stderr) {
@@ -39,6 +38,20 @@ export function execute(command, responseCallback, args, directoryOverride, inpu
     execCommand(command, responseCallback, args, directoryOverride, input);
 }
 
+export function executeAsPromise(command, args, directoryOverride, input) {
+    return new Promise((resolve, reject) => {
+        execCommand(command, (err, stdout, stderr) => {
+            if (err) {
+                reject(err.message);
+            } else if (stderr) {
+                reject(stderr);
+            } else {
+                resolve(stdout.toString());
+            }
+        }, args, directoryOverride, input);
+    });
+}
+
 function execCommand(command, responseCallback, args, directoryOverride, input) {
     var cmdLine = getSvnCmdPath();
     const maxBuffer = workspace.getConfiguration('svn').get('maxBuffer', 200 * 1024);
@@ -49,15 +62,15 @@ function execCommand(command, responseCallback, args, directoryOverride, input) 
     cmdLine += ' ' + command;
 
     if (args != null) {
-        if (_config) {
-            args = args.replace(_config.localDir, '');
+        if (config) {
+            args = args.replace(config.localDir, '');
         }
 
         cmdLine += ' ' + args;
     }
 
     Display.channel.appendLine(cmdLine);
-    var child = CP.exec(cmdLine, { cwd: _config ? _config.localDir : undefined, maxBuffer: maxBuffer }, responseCallback);
+    var child = CP.exec(cmdLine, { cwd: config ? config.localDir : undefined, maxBuffer }, responseCallback);
 
     if (input != null) {
         child.stdin.end(input, 'utf8');
@@ -105,28 +118,28 @@ export function getSvnCmdPath() {
     svnPath += buildCmd(svnDir, '-d');
 
     // later args override earlier args
-    if (_config) {
-        svnPath += buildCmd(_config.p4User, '-u');
-        svnPath += buildCmd(_config.p4Client, '-c');
-        svnPath += buildCmd(_config.p4Port, '-p');
-        svnPath += buildCmd(_config.p4Pass, '-P');
-        svnPath += buildCmd(_config.p4Dir, '-d');
+    if (config) {
+        svnPath += buildCmd(config.svnUser, '-u');
+        svnPath += buildCmd(config.svnClient, '-c');
+        svnPath += buildCmd(config.svnPort, '-p');
+        svnPath += buildCmd(config.svnPass, '-P');
+        svnPath += buildCmd(config.svnDir, '-d');
     }
 
     return svnPath;
 }
 
 export function convertToRel(path) {
-    if (!_config
-        || !_config.localDir || _config.localDir.length === 0
-        || !_config.p4Dir || _config.p4Dir.length === 0) {
+    if (!config
+        || !config.localDir || config.localDir.length === 0
+        || !config.svnDir || config.svnDir.length === 0) {
 
         return path;
     }
 
     const pathN = Utils.normalize(path);
-    if (pathN.startsWith(_config.localDir)) {
-        path = pathN.slice(_config.localDir.length);
+    if (pathN.startsWith(config.localDir)) {
+        path = pathN.slice(config.localDir.length);
     }
     return path;
 }

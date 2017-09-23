@@ -9,14 +9,51 @@ import * as Path from 'path';
 import * as fs from 'fs';
 
 import * as SvnService from './SvnService';
+import { SvnScmProvider } from './SvnScmProvider';
 import * as Display from './Display';
 import * as Utils from './Utils';
 
 export function registerCommands() {
+    
     commands.registerCommand('svn.add', addOpenFile);
     commands.registerCommand('svn.revert', revert);
     commands.registerCommand('svn.diff', diff);
     commands.registerCommand('svn.diffRevision', diffRevision);
+    commands.registerCommand('svn.info', info);
+    commands.registerCommand('svn.showOutput', showOutput);
+
+    // SCM commands
+    commands.registerCommand('svn.sync', () => {
+        SvnScmProvider.Sync();
+    });
+    commands.registerCommand('svn.refresh', () => {
+        SvnScmProvider.Refresh();
+    });
+    commands.registerCommand('svn.openFile', (e) => {
+        SvnScmProvider.OpenFile(e);
+    });
+    commands.registerCommand('svn.openResource', (e) => {
+        SvnScmProvider.Open(e);
+    });
+    commands.registerCommand('svn.submitDefault', () => {
+        SvnScmProvider.SubmitDefault();
+    });
+    commands.registerCommand('perforce.shelveunshelve', (e) => {
+        SvnScmProvider.ShelveOrUnshelve(e);
+    });
+    commands.registerCommand('svn.submitChangelist', (e) => {
+        SvnScmProvider.Submit(e);
+    });
+    commands.registerCommand('svn.processChangelist', (e) => {
+        SvnScmProvider.ProcessChangelist();
+    });
+    commands.registerCommand('svn.revertFile', (e) => {
+        SvnScmProvider.Revert(e);
+    });
+
+    commands.registerCommand('svn.reopenFile', (e) => {
+        SvnScmProvider.ReopenFile(e);
+    });
 }
 
 export function add(filePath, directoryOverride) {
@@ -27,6 +64,20 @@ export function add(filePath, directoryOverride) {
             Display.showError("file opened for add");
         }
     }, args, directoryOverride);
+}
+
+export function update(filePath) {
+    let args = '';
+    if (filePath) {
+        args = '"' + Utils.expansePath(filePath) + '"';
+    }
+     
+    SvnService.execute("update", (err, stdout, stderr) => {
+        SvnService.handleCommonServiceResponse(err, stdout, stderr);
+        if (!err) {
+            Display.showMessage("Repository updated");
+        }
+    }, args);
 }
 
 function addOpenFile() {
@@ -78,7 +129,7 @@ export function diff(revision) {
     var doc = editor.document;
 
     if(!doc.isUntitled) {
-        Utils.getFile('print', doc.uri.fsPath, revision).then((tmpFile) => {
+        Utils.getFile(doc.uri.fsPath, revision).then((tmpFile) => {
             var tmpFileUri = Uri.file(tmpFile)
             var revisionLabel = isNaN(revision) ? 'Most Recent Revision' : `Revision #${revision}`;
             commands.executeCommand('vscode.diff', tmpFileUri, doc.uri, Path.basename(doc.uri.fsPath) + ' - Diff Against ' + revisionLabel);
@@ -86,6 +137,19 @@ export function diff(revision) {
             Display.showError(err.toString());
         })
     }
+}
+
+export function info() {
+    if(!checkFolderOpened()) {
+        return false;
+    }
+
+    showOutput();
+    SvnService.execute('info', SvnService.handleInfoServiceResponse);
+}
+
+export function showOutput() {
+    Display.channel.show();
 }
 
 export function diffRevision() {
@@ -125,6 +189,17 @@ export function diffRevision() {
     }, args);
 
 }
+
+export function svnDelete(filePath) {
+    const args = '"' + Utils.expansePath(filePath) + '"';
+    SvnService.execute("delete", (err, stdout, stderr) => {
+        SvnService.handleCommonServiceResponse(err, stdout, stderr);
+        if(!err) {
+            Display.showError("file marked for delete");
+        }
+    }, args);
+}
+
 
 function checkFileSelected() {
     if (!window.activeTextEditor) {

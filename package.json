@@ -15,7 +15,36 @@
   ],
   "main": "./out/extension",
   "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Visual Studio Code SVN Configuration",
+      "properties": {
+        "perforce.editOnFileSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically open a file for edit when saved"
+        }
+      }
+    },
     "commands": [
+      {
+        "command": "svn.sync",
+        "title": "Sync",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/sync.svg",
+          "dark": "resources/icons/dark/sync.svg"
+        }
+      },
+      {
+        "command": "svn.refresh",
+        "title": "Refresh",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
       {
         "command": "svn.add",
         "title": "add - Open a new file to add it to the depot",
@@ -24,7 +53,29 @@
       {
         "command": "svn.revert",
         "title": "revert - Discard changes from an opened file",
-        "category": "SVN"
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/revert.svg",
+          "dark": "resources/icons/dark/revert.svg"
+        }
+      },
+      {
+        "command": "svn.revertChangelist",
+        "title": "Revert changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/revert.svg",
+          "dark": "resources/icons/dark/revert.svg"
+        }
+      },
+      {
+        "command": "svn.info",
+        "title": "Display client/server information",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/p4.svg",
+          "dark": "resources/icons/dark/p4.svg"
+        }
       },
       {
         "command": "svn.diff",
@@ -35,14 +86,196 @@
         "command": "svn.diffRevision",
         "title": "diff revision - Display diff of client file with depot file at a specific revision",
         "category": "SVN"
+      },
+      {
+        "command": "svn.openResource",
+        "title": "Open changes",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.openFile",
+        "title": "Open file",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.submitDefault",
+        "title": "Commit Default Changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/submit.svg",
+          "dark": "resources/icons/dark/submit.svg"
+        }
+      },
+      {
+        "command": "svn.submitChangelist",
+        "title": "Commit changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/submit.svg",
+          "dark": "resources/icons/dark/submit.svg"
+        }
+      },
+      {
+        "command": "svn.revertFile",
+        "title": "Revert file",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/revert.svg",
+          "dark": "resources/icons/dark/revert.svg"
+        }
+      },
+      {
+        "command": "svn.reopenFile",
+        "title": "Move to changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/reopen.svg",
+          "dark": "resources/icons/dark/reopen.svg"
+        }
+      },
+      {
+        "command": "svn.processChangelist",
+        "title": "Process changelist",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.showOutput",
+        "title": "Show Output",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.shelveunshelve",
+        "title": "Shelve/Unshelve file",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/shelveunshelve.svg",
+          "dark": "resources/icons/dark/shelveunshelve.svg"
+        }
       }
-    ]
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "svn.sync",
+          "group": "navigation@1",
+          "when": "scmProvider == svn"
+        },
+        {
+          "command": "svn.refresh",
+          "group": "navigation@2",
+          "when": "scmProvider == svn"
+        },
+        {
+          "command": "svn.sync",
+          "group": "1_sync",
+          "when": "scmProvider == svn"
+        },
+        {
+          "command": "svn.refresh",
+          "group": "1_sync",
+          "when": "scmProvider == svn"
+        },
+        {
+          "command": "svn.info",
+          "group": "3_info",
+          "when": "scmProvider == svn"
+        },
+        {
+          "command": "svn.showOutput",
+          "group": "3_info",
+          "when": "scmProvider == svn"
+        }
+      ],
+      "scm/resourceGroup/context": [
+        {
+          "command": "svn.submitDefault",
+          "when": "scmProvider == svn",
+          "group": "inline@1"
+        },
+        {
+          "command": "svn.submitChangelist",
+          "when": "scmProvider == svn",
+          "group": "inline@1"
+        },
+        {
+          "command": "svn.revertChangelist",
+          "when": "scmProvider == svn",
+          "group": "inline@2"
+        },
+        {
+          "command": "svn.submitDefault",
+          "when": "scmProvider == svn",
+          "group": "1_modification@1"
+        },
+        {
+          "command": "svn.submitChangelist",
+          "when": "scmProvider == svn",
+          "group": "1_modification@1"
+        },
+        {
+          "command": "svn.revertChangelist",
+          "when": "scmProvider == svn",
+          "group": "1_modification@3"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "svn.revertFile",
+          "when": "scmProvider == svn",
+          "group": "inline"
+        },
+        {
+          "command": "svn.reopenFile",
+          "when": "scmProvider == svn",
+          "group": "inline"
+        },
+        {
+          "command": "svn.shelveunshelve",
+          "when": "scmProvider == svn",
+          "group": "inline"
+        },
+
+        {
+          "command": "svn.add",
+          "when": "scmProvider == svn && scmResourceGroup == unversioned",
+          "group": "navigation"
+        },
+        {
+          "command": "svn.openResource",
+          "when": "scmProvider == svn",
+          "group": "navigation"
+        },
+        {
+          "command": "svn.openFile",
+          "when": "scmProvider == svn",
+          "group": "navigation"
+        },
+        {
+          "command": "svn.revertFile",
+          "when": "scmProvider == svn",
+          "group": "1_modification"
+        },
+        {
+          "command": "svn.reopenFile",
+          "when": "scmProvider == svn",
+          "group": "1_modification"
+        },
+        {
+          "command": "svn.shelveunshelve",
+          "when": "scmProvider == svn",
+          "group": "1_modification"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "babel-node ./",
     "compile": "babel ./src --watch --out-dir ./out --source-maps --require babel-polyfill",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test"
+  },
+  "dependencies": {
+    "parse-gitignore": "^0.4.0"
   },
   "devDependencies": {
     "@types/mocha": "^2.2.42",

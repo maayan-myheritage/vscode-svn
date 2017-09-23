@@ -9,13 +9,13 @@ import * as Path from 'path';
 import * as SvnService from './SvnService';
 import * as Utils from './Utils';
 
-var _statusBarItem
+let statusBarItem;
 
-export var channel = window.createOutputChannel('SVN Log');
+export let channel = window.createOutputChannel('SVN Log');
 
 export function initialize() {
-    _statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, Number.MIN_VALUE);
-    _statusBarItem.command = 'svn.menuFunctions';
+    statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, Number.MIN_VALUE);
+    statusBarItem.command = 'svn.menuFunctions';
 
     updateEditor();
 }
@@ -23,7 +23,7 @@ export function initialize() {
 export function updateEditor() {
     var editor = window.activeTextEditor;
     if (!editor) {
-        _statusBarItem.hide();
+        statusBarItem.hide();
         return;
     }
 
@@ -39,22 +39,22 @@ export function updateEditor() {
         SvnService.execute("status", function (err, stdout, stderr) {
             if (err) {
                 // file not under client root
-                _statusBarItem.text = 'SVN: $(circle-slash)';
-                _statusBarItem.tooltip = stderr.toString();
+                statusBarItem.text = 'SVN: $(circle-slash)';
+                statusBarItem.tooltip = stderr.toString();
             }
             else if (stderr) {
                 // file not opened on client
-                _statusBarItem.text = 'SVN: $(file-text)';
-                _statusBarItem.tooltip = stderr.toString();
+                statusBarItem.text = 'SVN: $(file-text)';
+                statusBarItem.tooltip = stderr.toString();
             } else if (stdout) {
                 // file opened in add or edit
-                _statusBarItem.text = 'SVN: $(check)';
-                _statusBarItem.tooltip = stdout.toString();
+                statusBarItem.text = 'SVN: $(check)';
+                statusBarItem.tooltip = stdout.toString();
             }
         }, args, directoryOverride);
-        _statusBarItem.show();
+        statusBarItem.show();
     } else {
-        _statusBarItem.hide();
+        statusBarItem.hide();
     }
 }
 

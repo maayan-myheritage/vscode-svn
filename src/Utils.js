@@ -1,4 +1,4 @@
-import { Event, Uri, workspace } from 'vscode';
+import { workspace } from 'vscode';
 import * as Path from 'path';
 import * as SvnService from './SvnService';
 import * as Display from './Display';
@@ -51,14 +51,9 @@ export function processInfo(output) {
     return map;
 }
 
-export function isLoggedIn(compatibilityMode) {
+export function isLoggedIn() {
     return new Promise((resolve, reject) => {
-        if (compatibilityMode === 'sourcedepot') {
-            resolve(true);
-            return;
-        }
-
-        SvnService.execute('login', (err, stdout, stderr) => {
+        SvnService.execute('auth', (err, stdout, stderr) => {
             err && Display.showError(err.toString());
             stderr && Display.showError(stderr.toString());
             if (err) {
@@ -68,7 +63,7 @@ export function isLoggedIn(compatibilityMode) {
             } else {
                 resolve(true);
             }
-        }, '-s');
+        });
     });
 }
 
@@ -105,7 +100,7 @@ export function getOutput(command, file, revision, prefixArgs, gOpts, input) {
 }
 
 // Get a path to a file containing the output of the command
-export function getFile(command, localFilePath, revision, prefixArgs) {
+export function getFile(localFilePath, revision, prefixArgs) {
     return new Promise((resolve, reject) => {
         var args = prefixArgs != null ? prefixArgs : '';
 
