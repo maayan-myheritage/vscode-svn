@@ -19,21 +19,80 @@
       "type": "object",
       "title": "Visual Studio Code SVN Configuration",
       "properties": {
-        "perforce.editOnFileSave": {
+        "svn.outputLevelVerbose": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically open a file for edit when saved"
+          "description": "Sets whether the SVN commands output level should be verbose"
+        },
+        "svn.addOnFileCreated": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add newly created file to SVN"
         }
       }
     },
     "commands": [
       {
-        "command": "svn.sync",
-        "title": "Sync",
+        "command": "svn.updateWorkingCopy",
+        "title": "Update All",
         "category": "SVN",
         "icon": {
-          "light": "resources/icons/light/sync.svg",
-          "dark": "resources/icons/dark/sync.svg"
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "svn.updateEditorFile",
+        "title": "Update",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/refresh.svg",
+          "dark": "resources/icons/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "svn.commit",
+        "title": "Commit All",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/check.svg",
+          "dark": "resources/icons/dark/check.svg"
+        }
+      },
+      {
+        "command": "svn.commitPath",
+        "title": "Commit",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/check.svg",
+          "dark": "resources/icons/dark/check.svg"
+        }
+      },
+      {
+        "command": "svn.commitEditorFile",
+        "title": "Commit File",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/check.svg",
+          "dark": "resources/icons/dark/check.svg"
+        }
+      },
+      {
+        "command": "svn.commitChangelist",
+        "title": "Commit Changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/check.svg",
+          "dark": "resources/icons/dark/check.svg"
+        }
+      },
+      {
+        "command": "svn.commitActiveChangelist",
+        "title": "Commit Active Changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/check.svg",
+          "dark": "resources/icons/dark/check.svg"
         }
       },
       {
@@ -46,127 +105,140 @@
         }
       },
       {
-        "command": "svn.add",
-        "title": "add - Open a new file to add it to the depot",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.revert",
-        "title": "revert - Discard changes from an opened file",
+        "command": "svn.addEditorFile",
+        "title": "Add",
         "category": "SVN",
         "icon": {
-          "light": "resources/icons/light/revert.svg",
-          "dark": "resources/icons/dark/revert.svg"
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
+        }
+      },
+      {
+        "command": "svn.addPath",
+        "title": "Add",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/add.svg",
+          "dark": "resources/icons/dark/add.svg"
+        }
+      },
+      {
+        "command": "svn.revertWorkingCopy",
+        "title": "Revert All",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/clean.svg",
+          "dark": "resources/icons/dark/clean.svg"
+        }
+      },
+      {
+        "command": "svn.revertPath",
+        "title": "Revert",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/clean.svg",
+          "dark": "resources/icons/dark/clean.svg"
+        }
+      },
+      {
+        "command": "svn.revertEditorFile",
+        "title": "Revert",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/clean.svg",
+          "dark": "resources/icons/dark/clean.svg"
         }
       },
       {
         "command": "svn.revertChangelist",
-        "title": "Revert changelist",
+        "title": "Revert Changelist",
         "category": "SVN",
         "icon": {
-          "light": "resources/icons/light/revert.svg",
-          "dark": "resources/icons/dark/revert.svg"
+          "light": "resources/icons/light/clean.svg",
+          "dark": "resources/icons/dark/clean.svg"
         }
+      },
+      {
+        "command": "svn.deleteChangelist",
+        "title": "Delete Changelist",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/remove.svg",
+          "dark": "resources/icons/dark/remove.svg"
+        }
+      },
+      {
+        "command": "svn.moveEditorFileToChangelist",
+        "title": "Move to Changelist",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.movePathToChangelist",
+        "title": "Move to Changelist",
+        "category": "SVN"
       },
       {
         "command": "svn.info",
-        "title": "Display client/server information",
+        "title": "Show SVN info",
         "category": "SVN",
         "icon": {
-          "light": "resources/icons/light/p4.svg",
-          "dark": "resources/icons/dark/p4.svg"
+          "light": "resources/icons/light/git.svg",
+          "dark": "resources/icons/dark/git.svg"
         }
       },
       {
-        "command": "svn.diff",
-        "title": "diff - Display diff of client file with depot file",
+        "command": "svn.diffEditorFile",
+        "title": "Diff",
         "category": "SVN"
       },
       {
-        "command": "svn.diffRevision",
-        "title": "diff revision - Display diff of client file with depot file at a specific revision",
+        "command": "svn.diffPath",
+        "title": "Diff",
         "category": "SVN"
       },
       {
-        "command": "svn.openResource",
-        "title": "Open changes",
+        "command": "svn.diffEditorFileRevision",
+        "title": "Diff with Revision",
         "category": "SVN"
+      },
+      {
+        "command": "svn.diffPathRevision",
+        "title": "Diff with Revision",
+        "category": "SVN"
+      },
+      {
+        "command": "svn.openChanges",
+        "title": "Open Changes",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/open-change.svg",
+          "dark": "resources/icons/dark/open-change.svg"
+        }
       },
       {
         "command": "svn.openFile",
-        "title": "Open file",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.submitDefault",
-        "title": "Commit Default Changelist",
+        "title": "Open File",
         "category": "SVN",
         "icon": {
-          "light": "resources/icons/light/submit.svg",
-          "dark": "resources/icons/dark/submit.svg"
-        }
-      },
-      {
-        "command": "svn.submitChangelist",
-        "title": "Commit changelist",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/submit.svg",
-          "dark": "resources/icons/dark/submit.svg"
-        }
-      },
-      {
-        "command": "svn.revertFile",
-        "title": "Revert file",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/revert.svg",
-          "dark": "resources/icons/dark/revert.svg"
-        }
-      },
-      {
-        "command": "svn.reopenFile",
-        "title": "Move to changelist",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/reopen.svg",
-          "dark": "resources/icons/dark/reopen.svg"
-        }
-      },
-      {
-        "command": "svn.processChangelist",
-        "title": "Process changelist",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.showOutput",
-        "title": "Show Output",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.shelveunshelve",
-        "title": "Shelve/Unshelve file",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/shelveunshelve.svg",
-          "dark": "resources/icons/dark/shelveunshelve.svg"
+          "light": "resources/icons/light/open-file.svg",
+          "dark": "resources/icons/dark/open-file.svg"
         }
       }
     ],
     "menus": {
       "scm/title": [
         {
-          "command": "svn.sync",
+          "command": "svn.commit",
           "group": "navigation@1",
           "when": "scmProvider == svn"
         },
         {
-          "command": "svn.refresh",
-          "group": "navigation@2",
+          "command": "svn.updateWorkingCopy",
+          "group": "navigation@1",
           "when": "scmProvider == svn"
         },
         {
-          "command": "svn.sync",
+          "command": "svn.updateWorkingCopy",
           "group": "1_sync",
           "when": "scmProvider == svn"
         },
@@ -179,90 +251,84 @@
           "command": "svn.info",
           "group": "3_info",
           "when": "scmProvider == svn"
-        },
-        {
-          "command": "svn.showOutput",
-          "group": "3_info",
-          "when": "scmProvider == svn"
         }
       ],
       "scm/resourceGroup/context": [
         {
-          "command": "svn.submitDefault",
-          "when": "scmProvider == svn",
-          "group": "inline@1"
-        },
-        {
-          "command": "svn.submitChangelist",
-          "when": "scmProvider == svn",
+          "command": "svn.commitChangelist",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "inline@1"
         },
         {
           "command": "svn.revertChangelist",
-          "when": "scmProvider == svn",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned && scmResourceGroup != default",
           "group": "inline@2"
         },
         {
-          "command": "svn.submitDefault",
-          "when": "scmProvider == svn",
-          "group": "1_modification@1"
-        },
-        {
-          "command": "svn.submitChangelist",
-          "when": "scmProvider == svn",
+          "command": "svn.commitChangelist",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "1_modification@1"
         },
         {
           "command": "svn.revertChangelist",
-          "when": "scmProvider == svn",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned && scmResourceGroup != default",
+          "group": "1_modification@2"
+        },
+        {
+          "command": "svn.deleteChangelist",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned && scmResourceGroup != default",
           "group": "1_modification@3"
         }
       ],
       "scm/resourceState/context": [
         {
-          "command": "svn.revertFile",
-          "when": "scmProvider == svn",
-          "group": "inline"
-        },
-        {
-          "command": "svn.reopenFile",
-          "when": "scmProvider == svn",
-          "group": "inline"
-        },
-        {
-          "command": "svn.shelveunshelve",
-          "when": "scmProvider == svn",
-          "group": "inline"
-        },
-
-        {
-          "command": "svn.add",
+          "command": "svn.addPath",
           "when": "scmProvider == svn && scmResourceGroup == unversioned",
-          "group": "navigation"
+          "group": "inline"
         },
         {
-          "command": "svn.openResource",
-          "when": "scmProvider == svn",
+          "command": "svn.commitPath",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "inline"
+        },
+        {
+          "command": "svn.revertPath",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "inline"
+        },
+        {
+          "command": "svn.addPath",
+          "when": "scmProvider == svn && scmResourceGroup == unversioned",
           "group": "navigation"
         },
         {
           "command": "svn.openFile",
           "when": "scmProvider == svn",
-          "group": "navigation"
+          "group": "navigation@3"
         },
         {
-          "command": "svn.revertFile",
-          "when": "scmProvider == svn",
+          "command": "svn.openChanges",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "navigation@1"
+        },
+        {
+          "command": "svn.diffPathRevision",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "navigation@2"
+        },
+        {
+          "command": "svn.commitPath",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "1_modification"
         },
         {
-          "command": "svn.reopenFile",
-          "when": "scmProvider == svn",
+          "command": "svn.revertPath",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "1_modification"
         },
         {
-          "command": "svn.shelveunshelve",
-          "when": "scmProvider == svn",
+          "command": "svn.movePathToChangelist",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "1_modification"
         }
       ]
