@@ -1,7 +1,7 @@
 import { Uri } from 'vscode';
 import * as path from 'path';
 
-const iconsRootPath = path.join(path.dirname(__dirname), '..', 'resources', 'icons');
+const iconsRootPath = path.join(path.dirname(__dirname), 'resources', 'icons');
 
 export class ResourceDecorationFactory {
     create(status) {

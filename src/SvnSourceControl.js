@@ -184,12 +184,13 @@ export class SvnSourceControl {
     }
 
     handleUpdateEditorFileCommand() {
-        if (window.activeTextEditor) {
-            this.svnScmCommands.updatePath(window.activeTextEditor.document.uri.fsPath)
-                .then(this.refreshView.bind(this));
-        } else {
+        if (!window.activeTextEditor) {
             onError.fire(new NoActiveTextEditorError());
+            return;
         }
+
+        this.svnScmCommands.updatePath(window.activeTextEditor.document.uri.fsPath)
+            .then(this.refreshView.bind(this));
     }
 
     handleRefreshCommand() {
@@ -205,7 +206,6 @@ export class SvnSourceControl {
                 ignoreFocusOut: true
             }).then(changelist => {
                 this.svnScmCommands.commitChangelist(changelist);
-
             })
         } else {
             this.svnScmCommands.commitChangelist(CHANGELIST_DEFAULT);
@@ -213,12 +213,12 @@ export class SvnSourceControl {
     }
 
     handleCommitEditorFileCommand() {
-        if (window.activeTextEditor) {
-            this.commitPath(window.activeTextEditor.document.uri.fsPath)
-                .then(this.refreshView.bind(this));
-        } else {
+        if (!window.activeTextEditor) {
             onError.fire(new NoActiveTextEditorError());
         }
+
+        this.commitPath(window.activeTextEditor.document.uri.fsPath)
+            .then(this.refreshView.bind(this));
     }
 
     handleCommitPathCommand(resource) {
@@ -269,17 +269,18 @@ export class SvnSourceControl {
     }
 
     handleAddEditorFileCommand() {
-        if (window.activeTextEditor) {
-            this.svnScmCommands.addPath(window.activeTextEditor.document.uri.fsPath)
-                .then(this.refreshView.bind(this))
-        } else {
+        if (!window.activeTextEditor) {
             onError.fire(new NoActiveTextEditorError());
+            return;
         }
+
+        this.svnScmCommands.addPath(window.activeTextEditor.document.uri.fsPath)
+            .then(this.refreshView.bind(this))
     }
 
     handleAddPathCommand(resource) {
-        if (!resource || !resource.id) {
-            onError.fire(new NoResourceChangelistError(resource));
+        if (!resource || !resource.resourceUri) {
+            onError.fire(new NoResourceUriError(resource));
             return;
         }
 
@@ -288,8 +289,14 @@ export class SvnSourceControl {
     }
 
     handleRevertWorkingCopyCommand() {
-        this.svnCmd.execute('revert', `. --depth infinity`)
-            .then(this.refreshView.bind(this))
+        window.showInformationMessage(`Are you sure you want to discard all changes?`, {
+            modal: true
+        }, 'Discard Changes').then(value => {
+            if (value == 'Discard Changes') {
+                this.svnCmd.execute('revert', `. --depth infinity`)
+                    .then(this.refreshView.bind(this))
+            }
+        })
     }
 
     handleRevertEditorFileCommand() {
@@ -298,18 +305,28 @@ export class SvnSourceControl {
             return;
         }
 
-        this.svnScmCommands.revertPath(window.activeTextEditor.document.uri.fsPath)
-            .then(this.refreshView.bind(this))
+        this.revert(window.activeTextEditor.document.uri.fsPath);
     }
 
     handleRevertPathCommand(resource) {
-        if (!resource || !resource.id) {
-            onError.fire(new NoResourceChangelistError(resource));
+        if (!resource || !resource.resourceUri) {
+            onError.fire(new NoResourceUriError(resource));
             return;
         }
 
-        this.svnScmCommands.revertPath(resource.resourceUri.fsPath)
-            .then(this.refreshView.bind(this))
+        this.revert(resource.resourceUri.fsPath);
+    }
+
+    revert(filePath) {
+        let fileName = path.basename(filePath);
+        window.showInformationMessage(`Are you sure you want to discard changes in ${fileName}?`, {
+            modal: true
+        }, 'Discard Changes').then(value => {
+            if (value == 'Discard Changes') {
+                this.svnScmCommands.revertPath(filePath)
+                    .then(this.refreshView.bind(this))
+            }
+        })
     }
 
     handleRevertChangelistCommand(resource) {
@@ -365,8 +382,8 @@ export class SvnSourceControl {
     }
 
     handleDiffPathCommand(resource, revision) {
-        if (!resource || !resource.id) {
-            onError.fire(new NoResourceChangelistError(resource));
+        if (!resource || !resource.resourceUri) {
+            onError.fire(new NoResourceUriError(resource));
             return;
         }
 
@@ -374,8 +391,8 @@ export class SvnSourceControl {
     }
 
     handleDiffPathRevisionCommand(resource) {
-        if (!resource || !resource.id) {
-            onError.fire(new NoResourceChangelistError(resource));
+        if (!resource || !resource.resourceUri) {
+            onError.fire(new NoResourceUriError(resource));
             return;
         }
 
@@ -418,8 +435,8 @@ export class SvnSourceControl {
     }
 
     handleMovePathToChangelistCommand(resource) {
-        if (!resource || !resource.id) {
-            onError.fire(new NoResourceChangelistError(resource));
+        if (!resource || !resource.resourceUri) {
+            onError.fire(new NoResourceUriError(resource));
             return;
         }
 

@@ -248,6 +248,11 @@
           "when": "scmProvider == svn"
         },
         {
+          "command": "svn.revertWorkingCopy",
+          "group": "1_sync",
+          "when": "scmProvider == svn"
+        },
+        {
           "command": "svn.info",
           "group": "3_info",
           "when": "scmProvider == svn"
@@ -289,12 +294,12 @@
         {
           "command": "svn.commitPath",
           "when": "scmProvider == svn && scmResourceGroup != unversioned",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "svn.revertPath",
           "when": "scmProvider == svn && scmResourceGroup != unversioned",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "svn.addPath",
