@@ -3,7 +3,6 @@ import * as path from 'path';
 import { Resource } from './Resource';
 import { SvnUtils } from './SvnUtils';
 
-import { SvnCommandLineService } from './SvnCommandLineService';
 import { SvnScmCommands } from './SvnScmCommands';
 import { ResourceDecorationFactory } from './ResourceDecorationFactory';
 import {
@@ -29,13 +28,11 @@ export class SvnSourceControl {
 
     /**
      * Creates an instance of SvnSourceControl.
-     * @param {SvnCommandLineService} svnCmd
      * @param {SvnScmCommands} svnScmCommands
      * @param {ResourceDecorartionFactory} resourceDecorartionFactory
      * @param {boolean} [enabled=true] 
      */
-    constructor(svnCmd, svnScmCommands, resourceDecorartionFactory, enabled = true) {
-        this.svnCmd = svnCmd;
+    constructor(svnScmCommands, resourceDecorartionFactory, enabled = true) {
         this.svnScmCommands = svnScmCommands;
 
         this.disposables = [];
@@ -43,6 +40,7 @@ export class SvnSourceControl {
 
         this.resourceDecorartionFactory = resourceDecorartionFactory;
         this.resourceGroups = [];
+        this.defaultGroup = null;
         this.changedFiles = [];
         this.changelistsGroups = [];
 
@@ -79,7 +77,7 @@ export class SvnSourceControl {
     }
 
     refreshView() {
-        return this.svnCmd.execute('status')
+        return this.svnScmCommands.status()
             .then(output => {
                 this.cleanResourceGroups();
 
@@ -91,6 +89,7 @@ export class SvnSourceControl {
 
                     defaultGroup.resourceStates = [];
                     this.resourceGroups.push(defaultGroup);
+                    this.defaultGroup = defaultGroup;
 
                     changedFiles.forEach((item) => {
                         let resource = new Resource(item.file, item.status, this.resourceDecorartionFactory.create(item.status));
@@ -153,28 +152,22 @@ export class SvnSourceControl {
 
     registerCommands() {
         commands.registerCommand('svn.updateWorkingCopy', this.handleUpdateWorkingCopyCommand.bind(this));
-        commands.registerCommand('svn.updateEditorFile', this.handleUpdateEditorFileCommand.bind(this));
+        commands.registerCommand('svn.update', createCommand(this, this.handleUpdateCommand, { useActiveTextEditor: true }));
         commands.registerCommand('svn.refresh', this.handleRefreshCommand.bind(this));
-        commands.registerCommand('svn.commit', this.handleCommitCommand.bind(this));
-        commands.registerCommand('svn.commitEditorFile', this.handleCommitEditorFileCommand.bind(this));
-        commands.registerCommand('svn.commitPath', this.handleCommitPathCommand.bind(this));
+        commands.registerCommand('svn.commitAll', this.handleCommitAllCommand.bind(this));
+        commands.registerCommand('svn.commitPath', createCommand(this, this.handleCommitCommand, { useActiveTextEditor: true }));
         commands.registerCommand('svn.commitChangelist', this.handleCommitChangelistCommand.bind(this));
         commands.registerCommand('svn.commitActiveChangelist', this.handleCommitActiveChangelistCommand.bind(this));
-        commands.registerCommand('svn.addEditorFile', this.handleAddEditorFileCommand.bind(this));
-        commands.registerCommand('svn.addPath', this.handleAddPathCommand.bind(this));
+        commands.registerCommand('svn.add', createCommand(this, this.handleAddCommand, { useActiveTextEditor: true }));
         commands.registerCommand('svn.openFile', this.handleOpenFileCommand.bind(this));
         commands.registerCommand('svn.openChanges', this.handleOpenChangesCommand.bind(this));
         commands.registerCommand('svn.revertWorkingCopy', this.handleRevertWorkingCopyCommand.bind(this));
-        commands.registerCommand('svn.revertPath', this.handleRevertPathCommand.bind(this));
-        commands.registerCommand('svn.revertEditorFile', this.handleRevertEditorFileCommand.bind(this));
+        commands.registerCommand('svn.revert', createCommand(this, this.handleRevertCommand, { useActiveTextEditor: true }));
         commands.registerCommand('svn.revertChangelist', this.handleRevertChangelistCommand.bind(this));
         commands.registerCommand('svn.deleteChangelist', this.handleDeleteChangelistCommand.bind(this));
-        commands.registerCommand('svn.diffEditorFile', this.handleDiffEditorFileCommand.bind(this));
-        commands.registerCommand('svn.diffPath', this.handleDiffPathCommand.bind(this));
-        commands.registerCommand('svn.diffEditorFileRevision', this.handleDiffEditorFileRevisionCommand.bind(this));
-        commands.registerCommand('svn.diffPathRevision', this.handleDiffPathRevisionCommand.bind(this));
-        commands.registerCommand('svn.moveEditorFileToChangelist', this.handleMoveEditorFileToChangelistCommand.bind(this));
-        commands.registerCommand('svn.movePathToChangelist', this.handleMovePathToChangelistCommand.bind(this));
+        commands.registerCommand('svn.diff', createCommand(this, this.handleDiffCommand, { useActiveTextEditor: true }));
+        commands.registerCommand('svn.diffRevision', createCommand(this, this.handleDiffRevisionCommand, { useActiveTextEditor: true }));
+        commands.registerCommand('svn.moveToChangelist', createCommand(this, this.handleMoveToChangelistCommand, { useActiveTextEditor: true }));
         commands.registerCommand('svn.info', this.handleInfoCommand.bind(this));
     }
 
@@ -183,13 +176,8 @@ export class SvnSourceControl {
             .then(this.refreshView.bind(this));
     }
 
-    handleUpdateEditorFileCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-            return;
-        }
-
-        this.svnScmCommands.updatePath(window.activeTextEditor.document.uri.fsPath)
+    handleUpdateCommand(uris) {
+        this.svnScmCommands.updatePath(uris.map(uri => uri.fsPath))
             .then(this.refreshView.bind(this));
     }
 
@@ -197,7 +185,7 @@ export class SvnSourceControl {
         this.refreshView();
     }
 
-    handleCommitCommand() {
+    handleCommitAllCommand() {
         let changelists = getChangelistsForQuickPick(this.changelistsGroups);
 
         if (changelists.length > 1) {
@@ -205,29 +193,15 @@ export class SvnSourceControl {
                 placeHolder: 'Pick a changelist to commit',
                 ignoreFocusOut: true
             }).then(changelist => {
-                this.svnScmCommands.commitChangelist(changelist);
+                this.commitChangelist(changelist);
             })
         } else {
-            this.svnScmCommands.commitChangelist(CHANGELIST_DEFAULT);
+            this.commitChangelist(CHANGELIST_DEFAULT);
         }
     }
 
-    handleCommitEditorFileCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-        }
-
-        this.commitPath(window.activeTextEditor.document.uri.fsPath)
-            .then(this.refreshView.bind(this));
-    }
-
-    handleCommitPathCommand(resource) {
-        if (!resource || !resource.resourceUri) {
-            onError.fire(new NoResourceUriError(resource));
-            return;
-        }
-
-        this.commitPath(resource.resourceUri.fsPath);
+    handleCommitCommand(uris) {
+        this.commitPath(uris.map(uri => uri.fsPath));
     }
 
     handleCommitChangelistCommand(resource) {
@@ -242,8 +216,17 @@ export class SvnSourceControl {
     handleCommitActiveChangelistCommand() {
         const message = scm.inputBox.value;
         scm.inputBox.value = '';
-        this.svnScmCommands.commit('.', message, CHANGELIST_DEFAULT) // TODO: Get active changelist from config
-            .then(this.refreshView.bind(this));
+
+        let activeChangelist = CHANGELIST_DEFAULT; // TODO: Get active changelist from config
+
+        if (activeChangelist == CHANGELIST_DEFAULT) {
+            let paths = this.getDefaultChangelistPaths();
+            this.svnScmCommands.commit(paths, message)
+                .then(this.refreshView.bind(this));
+        } else {
+            this.svnScmCommands.commitChangelist(activeChangelist, message)
+                .then(this.refreshView.bind(this));
+        }
     }
 
     commitPath(path) {
@@ -258,72 +241,70 @@ export class SvnSourceControl {
     }
 
     commitChangelist(changelist) {
-        getCommitMessage().then(message => {
-            if (!validateCommitMessage(message)) {
-                onError.fire(new MissingCommitMessageError());
-            } else if (message) {
-                this.svnScmCommands.commitChangelist(changelist, message)
-                    .then(this.refreshView.bind(this));
-            }
-        });
+        if (changelist == CHANGELIST_DEFAULT) {
+            this.commitDefaultChangelist();
+        } else {
+            getCommitMessage().then(message => {
+                if (!validateCommitMessage(message)) {
+                    onError.fire(new MissingCommitMessageError());
+                } else if (message) {
+                    this.svnScmCommands.commitChangelist(changelist, message)
+                        .then(this.refreshView.bind(this));
+                }
+            });
+        }
     }
 
-    handleAddEditorFileCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-            return;
-        }
+    commitDefaultChangelist() {
+        let paths = this.getDefaultChangelistPaths();
 
-        this.svnScmCommands.addPath(window.activeTextEditor.document.uri.fsPath)
-            .then(this.refreshView.bind(this))
+        if (paths.length > 0) {
+            getCommitMessage().then(message => {
+                if (!validateCommitMessage(message)) {
+                    onError.fire(new MissingCommitMessageError());
+                } else if (message) {
+                    this.svnScmCommands.commit(paths, message)
+                        .then(this.refreshView.bind(this));
+                }
+            })
+        }
     }
 
-    handleAddPathCommand(resource) {
-        if (!resource || !resource.resourceUri) {
-            onError.fire(new NoResourceUriError(resource));
-            return;
-        }
+    getDefaultChangelistPaths() {
+        let paths = this.defaultGroup.resourceStates.map(resource => {
+            return resource.uri.fsPath;
+        })
 
-        this.svnScmCommands.addPath(resource.resourceUri.fsPath)
+        return paths;
+    }
+
+    handleAddCommand(uris) {
+        this.svnScmCommands.addPath(uris.map(uri => uri.fsPath))
             .then(this.refreshView.bind(this))
     }
 
     handleRevertWorkingCopyCommand() {
         window.showInformationMessage(`Are you sure you want to discard all changes?`, {
             modal: true
-        }, 'Discard Changes').then(value => {
-            if (value == 'Discard Changes') {
-                this.svnCmd.execute('revert', `. --depth infinity`)
-                    .then(this.refreshView.bind(this))
-            }
-        })
+        }, 'Discard Changes')
+            .then(value => {
+                if (value == 'Discard Changes') {
+                    this.svnScmCommands.revertWorkingCopy()
+                        .then(this.refreshView.bind(this))
+                }
+            })
     }
 
-    handleRevertEditorFileCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-            return;
-        }
+    handleRevertCommand(uris) {
+        let message = uris.length > 1
+            ? message = `Are you sure you want to discard ${uris.length} changes?`
+            : message = `Are you sure you want to discard changes in ${path.basename(uris[0].fsPath)}?`;
 
-        this.revert(window.activeTextEditor.document.uri.fsPath);
-    }
-
-    handleRevertPathCommand(resource) {
-        if (!resource || !resource.resourceUri) {
-            onError.fire(new NoResourceUriError(resource));
-            return;
-        }
-
-        this.revert(resource.resourceUri.fsPath);
-    }
-
-    revert(filePath) {
-        let fileName = path.basename(filePath);
-        window.showInformationMessage(`Are you sure you want to discard changes in ${fileName}?`, {
+        window.showInformationMessage(message, {
             modal: true
         }, 'Discard Changes').then(value => {
             if (value == 'Discard Changes') {
-                this.svnScmCommands.revertPath(filePath)
+                this.svnScmCommands.revertPath(uris.map(uri => uri.fsPath))
                     .then(this.refreshView.bind(this))
             }
         })
@@ -360,7 +341,7 @@ export class SvnSourceControl {
 
         switch (resource.status) {
             case 'M':
-                this.handleDiffPathCommand(resource, 'HEAD');
+                this.diff(resource.resourceUri.fsPath, 'HEAD');
                 break;
 
             case 'D':
@@ -372,47 +353,23 @@ export class SvnSourceControl {
         }
     }
 
-    handleDiffEditorFileCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-            return;
-        }
-
-        this.diff(window.activeTextEditor.document.uri.fsPath);
+    handleDiffCommand(uris) {
+        uris.map(uri => {
+            this.diff(uri.fsPath);
+        })
     }
 
-    handleDiffPathCommand(resource, revision) {
-        if (!resource || !resource.resourceUri) {
-            onError.fire(new NoResourceUriError(resource));
-            return;
+    handleDiffRevisionCommand(uris) {
+        if (uris.length == 1) {
+            this.diffPickRevision(uris[0].fsPath);
         }
-
-        this.diff(resource.resourceUri.fsPath, revision);
     }
 
-    handleDiffPathRevisionCommand(resource) {
-        if (!resource || !resource.resourceUri) {
-            onError.fire(new NoResourceUriError(resource));
-            return;
-        }
-
-        this.diffPickRevision(resource.resourceUri.fsPath);
-    }
-
-    handleDiffEditorFileRevisionCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-            return;
-        }
-
-        this.diffPickRevision(window.activeTextEditor.document.uri.fsPath);
-    }
-
-    diff(filePath, revision) {
+    diff(filePath, revision = 'HEAD') {
         this.svnScmCommands.getFileOutput(filePath, revision)
             .then((tmpFileUri) => {
                 let filename = path.basename(filePath);
-                commands.executeCommand('vscode.diff', tmpFileUri, Uri.file(filePath), `Compare ${filename} current with revision ${revision}`);
+                commands.executeCommand('vscode.diff', tmpFileUri, Uri.file(filePath), `Compare ${filename} with revision ${revision}`);
             })
     }
 
@@ -425,22 +382,8 @@ export class SvnSourceControl {
             });
     }
 
-    handleMoveEditorFileToChangelistCommand() {
-        if (!window.activeTextEditor) {
-            onError.fire(new NoActiveTextEditorError());
-            return;
-        }
-
-        this.moveToChangelist(window.activeTextEditor.document.uri.fsPath);
-    }
-
-    handleMovePathToChangelistCommand(resource) {
-        if (!resource || !resource.resourceUri) {
-            onError.fire(new NoResourceUriError(resource));
-            return;
-        }
-
-        this.moveToChangelist(resource.resourceUri.fsPath);
+    handleMoveToChangelistCommand(uris) {
+        this.moveToChangelist(uris.map(uri => uri.fsPath));
     }
 
     moveToChangelist(path) {
@@ -453,7 +396,7 @@ export class SvnSourceControl {
                     ignoreFocusOut: true
                 }).then(newChangelist => {
                     if (newChangelist.trim() != '') {
-                        this.svnCmd.execute('changelist', `"${newChangelist}" "${path}"`)
+                        this.svnScmCommands.moveToChangelist(path, newChangelist)
                             .then(this.refreshView.bind(this))
                     }
                 });
@@ -516,4 +459,28 @@ function validateCommitMessage(message) {
     }
 
     return true;
+}
+
+function createCommand(target, method, options) {
+    return (...resourceStates) => {
+        let uris = resourceStates
+            .filter(resource => resource instanceof Resource)
+            .map(resource => resource.resourceUri);
+
+        if (uris.length == 0) {
+            uris = resourceStates
+                .filter(resource => resource instanceof Uri)
+
+            if (uris.length == 0 && options.useActiveTextEditor) {
+                uris = [window.activeTextEditor && window.activeTextEditor.document.uri];
+            }
+        }
+
+        if (uris.length == 0) {
+            onError.fire(new NoResourceUriError());
+            return;
+        }
+
+        method.call(target, uris);
+    };
 }

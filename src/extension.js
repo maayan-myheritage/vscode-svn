@@ -29,7 +29,7 @@ function activate(context) {
         dir: workspace.rootPath
     }, cp);
     let svnScmCommands = new SvnScmCommands(svnCmd);
-    let svnSourceControl = new SvnSourceControl(svnCmd, svnScmCommands, new ResourceDecorationFactory());
+    let svnSourceControl = new SvnSourceControl(svnScmCommands, new ResourceDecorationFactory());
     let svnTextContentProvider = new SvnTextContentProvider(svnCmd);
     let svnFileSystemListener = new SvnFileSystemListener(svnSourceControl);
 

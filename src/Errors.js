@@ -1,9 +1,3 @@
-export class NoActiveTextEditorError extends Error {
-    constructor() {
-        super('No active text editor found.');
-    }
-}
-
 export class NoResourceUriError extends Error {
     constructor(resource) {
         super(`Failed to get resource URI from ${resource}.`);

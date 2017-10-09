@@ -13,8 +13,9 @@ export class SvnScmCommands {
         this.svnCommandLineService = svnCommandLineService;
     }
 
-    updatePath(path) {
-        return this.svnCommandLineService.execute('update', `${path}`);
+    updatePath(paths) {
+        paths = flattenPaths(paths);
+        return this.svnCommandLineService.execute('update', `${paths}`);
     }
 
     updateChangelist(changelist) {
@@ -25,28 +26,31 @@ export class SvnScmCommands {
         return this.svnCommandLineService.execute('update');
     }
 
-    commit(path, message) {
-        return this.svnCommandLineService.execute('commit', `${path} -m "${message}"`);
+    commit(paths, message) {
+        paths = flattenPaths(paths);
+        return this.svnCommandLineService.execute('commit', `${paths} -m "${message}"`);
     }
 
     commitChangelist(changelist, message) {
         return this.svnCommandLineService.execute('commit', `--changelist "${changelist}" -m ${message}`);
     }
 
-    addPath(path) {
-        return this.svnCommandLineService.execute('add', `"${path}"`)
+    addPath(paths) {
+        paths = flattenPaths(paths);
+        return this.svnCommandLineService.execute('add', `${paths}`)
     }
 
-    revertPath(path) {
-        if (fs.lstatSync(path).isDirectory()) {
-            return this.svnCommandLineService.execute('revert', `"${path}" --depth infinity`);
-        } else {
-            return this.svnCommandLineService.execute('revert', `"${path}"`);
-        }
+    revertPath(paths) {
+        paths = flattenPaths(paths);
+        return this.svnCommandLineService.execute('revert', `${paths} --depth infinity`);
     }
 
     revertChangelist(changelist) {
         return this.svnCommandLineService.execute('revert', `--recursive --changelist "${changelist}" .`);
+    }
+
+    revertWorkingCopy() {
+        return this.svnCommandLineService.execute('revert', `. --depth infinity`)
     }
 
     deleteChangelist(changelist) {
@@ -73,26 +77,31 @@ export class SvnScmCommands {
         })
     }
 
-    moveToChangelist(path, changelist) {
-        return this.svnCommandLineService.execute('changelist', `${changelist} "${path}"`);
+    moveToChangelist(paths, changelist) {
+        paths = flattenPaths(paths);
+        return this.svnCommandLineService.execute('changelist', `${changelist} ${paths}`);
     }
 
     info() {
         return this.svnCommandLineService.execute('info');
     }
 
+    status() {
+        return this.svnCommandLineService.execute('status');
+    }
+
     getRepositoryName() {
         return new Promise((resolve, reject) => {
             this.svnCommandLineService.execute('info')
-            .then(output => {
-                let matches = /Repository Root: ([^\n]+)/g.exec(output);
-                if (matches.length > 1) {
-                    resolve(matches[1].split('/').pop());
-                } else {
-                    reject()
-                }
-            })
-            .catch(error => reject(error))
+                .then(output => {
+                    let matches = /Repository Root: ([^\n]+)/g.exec(output);
+                    if (matches.length > 1) {
+                        resolve(matches[1].split('/').pop());
+                    } else {
+                        reject()
+                    }
+                })
+                .catch(error => reject(error))
         })
     }
 
@@ -119,4 +128,12 @@ export class SvnScmCommands {
                 })
         })
     }
+}
+
+function flattenPaths(paths) {
+    if (paths instanceof Array) {
+        return paths.map(path => `"${path}"`).join(' ');
+    }
+
+    return paths;
 }

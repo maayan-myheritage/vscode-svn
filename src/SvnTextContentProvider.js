@@ -20,7 +20,7 @@ export class SvnTextContentProvider {
     }
 
     provideTextDocumentContent(uri) {
-        let args = uri.fsPath;
+        let args = `"${uri.fsPath}"`;
 
         if (uri.fragment) {
             args += ` -r ${uri.fragment}`;

@@ -42,7 +42,7 @@
         }
       },
       {
-        "command": "svn.updateEditorFile",
+        "command": "svn.update",
         "title": "Update",
         "category": "SVN",
         "icon": {
@@ -51,7 +51,7 @@
         }
       },
       {
-        "command": "svn.commit",
+        "command": "svn.commitAll",
         "title": "Commit All",
         "category": "SVN",
         "icon": {
@@ -62,15 +62,6 @@
       {
         "command": "svn.commitPath",
         "title": "Commit",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/check.svg",
-          "dark": "resources/icons/dark/check.svg"
-        }
-      },
-      {
-        "command": "svn.commitEditorFile",
-        "title": "Commit File",
         "category": "SVN",
         "icon": {
           "light": "resources/icons/light/check.svg",
@@ -105,16 +96,7 @@
         }
       },
       {
-        "command": "svn.addEditorFile",
-        "title": "Add",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/add.svg",
-          "dark": "resources/icons/dark/add.svg"
-        }
-      },
-      {
-        "command": "svn.addPath",
+        "command": "svn.add",
         "title": "Add",
         "category": "SVN",
         "icon": {
@@ -132,16 +114,7 @@
         }
       },
       {
-        "command": "svn.revertPath",
-        "title": "Revert",
-        "category": "SVN",
-        "icon": {
-          "light": "resources/icons/light/clean.svg",
-          "dark": "resources/icons/dark/clean.svg"
-        }
-      },
-      {
-        "command": "svn.revertEditorFile",
+        "command": "svn.revert",
         "title": "Revert",
         "category": "SVN",
         "icon": {
@@ -168,12 +141,7 @@
         }
       },
       {
-        "command": "svn.moveEditorFileToChangelist",
-        "title": "Move to Changelist",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.movePathToChangelist",
+        "command": "svn.moveToChangelist",
         "title": "Move to Changelist",
         "category": "SVN"
       },
@@ -187,22 +155,12 @@
         }
       },
       {
-        "command": "svn.diffEditorFile",
+        "command": "svn.diff",
         "title": "Diff",
         "category": "SVN"
       },
       {
-        "command": "svn.diffPath",
-        "title": "Diff",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.diffEditorFileRevision",
-        "title": "Diff with Revision",
-        "category": "SVN"
-      },
-      {
-        "command": "svn.diffPathRevision",
+        "command": "svn.diffRevision",
         "title": "Diff with Revision",
         "category": "SVN"
       },
@@ -228,7 +186,7 @@
     "menus": {
       "scm/title": [
         {
-          "command": "svn.commit",
+          "command": "svn.commitAll",
           "group": "navigation@1",
           "when": "scmProvider == svn"
         },
@@ -287,7 +245,7 @@
       ],
       "scm/resourceState/context": [
         {
-          "command": "svn.addPath",
+          "command": "svn.add",
           "when": "scmProvider == svn && scmResourceGroup == unversioned",
           "group": "inline"
         },
@@ -297,12 +255,17 @@
           "group": "inline@2"
         },
         {
-          "command": "svn.revertPath",
+          "command": "svn.revert",
           "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "inline@1"
         },
         {
-          "command": "svn.addPath",
+          "command": "svn.update",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "navigation"
+        },
+        {
+          "command": "svn.add",
           "when": "scmProvider == svn && scmResourceGroup == unversioned",
           "group": "navigation"
         },
@@ -317,9 +280,14 @@
           "group": "navigation@1"
         },
         {
-          "command": "svn.diffPathRevision",
+          "command": "svn.diff",
           "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "navigation@2"
+        },
+        {
+          "command": "svn.diffRevision",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "navigation@3"
         },
         {
           "command": "svn.commitPath",
@@ -327,14 +295,35 @@
           "group": "1_modification"
         },
         {
-          "command": "svn.revertPath",
+          "command": "svn.revert",
           "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "1_modification"
         },
         {
-          "command": "svn.movePathToChangelist",
+          "command": "svn.moveToChangelist",
           "when": "scmProvider == svn && scmResourceGroup != unversioned",
           "group": "1_modification"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "svn.commitPath",
+          "group": "svn",
+          "when": ""
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "svn.commitPath",
+          "group": "svn",
+          "when": ""
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "svn.commitPath",
+          "group": "svn",
+          "when": ""
         }
       ]
     }
