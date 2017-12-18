@@ -27,6 +27,7 @@ function getIconPath(status, theme) {
         case 'D': return getIconUri('status-deleted', theme);
         case 'M': return getIconUri('status-modified', theme);
         case 'R': return getIconUri('status-renamed', theme);
+        case '!': return getIconUri('status-missing', theme);
         default: return void 0;
     }
 }

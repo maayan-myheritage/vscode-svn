@@ -105,6 +105,15 @@
         }
       },
       {
+        "command": "svn.delete",
+        "title": "Delete",
+        "category": "SVN",
+        "icon": {
+          "light": "resources/icons/light/remove.svg",
+          "dark": "resources/icons/dark/remove.svg"
+        }
+      },
+      {
         "command": "svn.revertWorkingCopy",
         "title": "Revert All",
         "category": "SVN",
@@ -270,6 +279,11 @@
           "group": "navigation"
         },
         {
+          "command": "svn.delete",
+          "when": "scmProvider == svn && scmResourceGroup != unversioned",
+          "group": "navigation"
+        },
+        {
           "command": "svn.openFile",
           "when": "scmProvider == svn",
           "group": "navigation@3"
@@ -324,6 +338,11 @@
           "command": "svn.commitPath",
           "group": "svn",
           "when": ""
+        },
+        {
+          "command": "svn.delete",
+          "when": "",
+          "group": "svn"
         }
       ]
     }

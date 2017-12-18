@@ -6,7 +6,6 @@ import { SvnUtils } from './SvnUtils';
 import { SvnScmCommands } from './SvnScmCommands';
 import { ResourceDecorationFactory } from './ResourceDecorationFactory';
 import {
-    NoActiveTextEditorError,
     MissingCommitMessageError,
     NoResourceChangelistError,
     NoResourceUriError
@@ -159,6 +158,7 @@ export class SvnSourceControl {
         commands.registerCommand('svn.commitChangelist', this.handleCommitChangelistCommand.bind(this));
         commands.registerCommand('svn.commitActiveChangelist', this.handleCommitActiveChangelistCommand.bind(this));
         commands.registerCommand('svn.add', createCommand(this, this.handleAddCommand, { useActiveTextEditor: true }));
+        commands.registerCommand('svn.delete', createCommand(this, this.handleDeleteCommand, { useActiveTextEditor: true }));
         commands.registerCommand('svn.openFile', this.handleOpenFileCommand.bind(this));
         commands.registerCommand('svn.openChanges', this.handleOpenChangesCommand.bind(this));
         commands.registerCommand('svn.revertWorkingCopy', this.handleRevertWorkingCopyCommand.bind(this));
@@ -283,6 +283,11 @@ export class SvnSourceControl {
             .then(this.refreshView.bind(this))
     }
 
+    handleDeleteCommand(uris) {
+        this.svnScmCommands.deletePath(uris.map(uri => uri.fsPath))
+            .then(this.refreshView.bind(this))
+    }
+
     handleRevertWorkingCopyCommand() {
         window.showInformationMessage(`Are you sure you want to discard all changes?`, {
             modal: true
@@ -345,7 +350,10 @@ export class SvnSourceControl {
                 break;
 
             case 'D':
-                // TODO: Open from repository
+                this.svnScmCommands.getFileOutput(resource.resourceUri.fsPath, 'HEAD')
+                    .then(tmpFileUri => {
+                        commands.executeCommand("vscode.open", tmpFileUri)
+                    })
                 break;
 
             default:
@@ -367,7 +375,7 @@ export class SvnSourceControl {
 
     diff(filePath, revision = 'HEAD') {
         this.svnScmCommands.getFileOutput(filePath, revision)
-            .then((tmpFileUri) => {
+            .then(tmpFileUri => {
                 let filename = path.basename(filePath);
                 commands.executeCommand('vscode.diff', tmpFileUri, Uri.file(filePath), `Compare ${filename} with revision ${revision}`);
             })

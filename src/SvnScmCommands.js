@@ -40,6 +40,11 @@ export class SvnScmCommands {
         return this.svnCommandLineService.execute('add', `${paths}`)
     }
 
+    deletePath(paths) {
+        paths = flattenPaths(paths);
+        return this.svnCommandLineService.execute('delete', `${paths}`)
+    }
+
     revertPath(paths) {
         paths = flattenPaths(paths);
         return this.svnCommandLineService.execute('revert', `${paths} --depth infinity`);

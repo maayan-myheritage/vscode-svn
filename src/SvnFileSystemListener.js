@@ -49,7 +49,14 @@ export class SvnFileSystemListener {
     }
 
     handleFileDeleted(uri) {
-        this.svnSourceControl.refreshView();
+        window.showInformationMessage(`Would you like to remove from SVN?`, {
+            modal: true
+        }, 'Yes').then(value => {
+            if (value == 'Yes') {
+                this.svnSourceControl.handleDeleteCommand([uri]);
+            }
+        })
+
         return;
 
         // let docPath = uri.fsPath;
